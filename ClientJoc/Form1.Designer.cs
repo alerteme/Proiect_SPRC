@@ -1,3 +1,4 @@
+
 namespace ClientJoc
 {
     partial class Form1
@@ -12,58 +13,85 @@ namespace ClientJoc
 
         private void InitializeComponent()
         {
-            this.txtUsername = new System.Windows.Forms.TextBox();
-            this.btnConnect  = new System.Windows.Forms.Button();
-            this.lstChat     = new System.Windows.Forms.ListBox();
-            this.txtMessage  = new System.Windows.Forms.TextBox();
-            this.btnSend     = new System.Windows.Forms.Button();
-            this.lblUser     = new System.Windows.Forms.Label();
-            this.SuspendLayout();
-
-            // lblUser
-            this.lblUser.Text     = "Username:";
-            this.lblUser.Location = new System.Drawing.Point(10, 15);
-            this.lblUser.Size     = new System.Drawing.Size(70, 20);
-
+            txtUsername = new TextBox();
+            btnConnect = new Button();
+            lstChat = new ListBox();
+            txtMessage = new TextBox();
+            btnSend = new Button();
+            lblUser = new Label();
+            SuspendLayout();
+            // 
             // txtUsername
-            this.txtUsername.Location = new System.Drawing.Point(85, 12);
-            this.txtUsername.Size     = new System.Drawing.Size(200, 23);
-
+            // 
+            txtUsername.Location = new Point(85, 12);
+            txtUsername.Name = "txtUsername";
+            txtUsername.Size = new Size(200, 27);
+            txtUsername.TabIndex = 1;
+            this.txtUsername.TextChanged += new System.EventHandler(this.txtUsername_TextChanged);
+            // 
             // btnConnect
-            this.btnConnect.Text     = "Conectează";
-            this.btnConnect.Location = new System.Drawing.Point(295, 11);
-            this.btnConnect.Size     = new System.Drawing.Size(100, 25);
-            this.btnConnect.Click   += new System.EventHandler(this.btnConnect_Click);
-
+            // 
+            btnConnect.Location = new Point(295, 11);
+            btnConnect.Name = "btnConnect";
+            btnConnect.Size = new Size(100, 25);
+            btnConnect.TabIndex = 2;
+            btnConnect.Text = "Conectează";
+            btnConnect.Click += btnConnect_Click;
+            // 
             // lstChat
-            this.lstChat.Location             = new System.Drawing.Point(10, 50);
-            this.lstChat.Size                 = new System.Drawing.Size(460, 290);
-            this.lstChat.ScrollAlwaysVisible  = true;
-
+            // 
+            lstChat.Location = new Point(10, 50);
+            lstChat.Name = "lstChat";
+            lstChat.ScrollAlwaysVisible = true;
+            lstChat.Size = new Size(460, 284);
+            lstChat.TabIndex = 3;
+            // 
             // txtMessage
-            this.txtMessage.Location = new System.Drawing.Point(10, 355);
-            this.txtMessage.Size     = new System.Drawing.Size(355, 23);
-            this.txtMessage.Enabled  = false;
-            this.txtMessage.KeyDown += new System.Windows.Forms.KeyEventHandler(this.txtMessage_KeyDown);
-
+            // 
+            txtMessage.Enabled = false;
+            txtMessage.Location = new Point(10, 355);
+            txtMessage.Name = "txtMessage";
+            txtMessage.Size = new Size(355, 27);
+            txtMessage.TabIndex = 4;
+            txtMessage.KeyDown += txtMessage_KeyDown;
+            // 
             // btnSend
-            this.btnSend.Text     = "Trimite";
-            this.btnSend.Location = new System.Drawing.Point(370, 354);
-            this.btnSend.Size     = new System.Drawing.Size(100, 25);
-            this.btnSend.Enabled  = false;
-            this.btnSend.Click   += new System.EventHandler(this.btnSend_Click);
-
+            // 
+            btnSend.Enabled = false;
+            btnSend.Location = new Point(370, 354);
+            btnSend.Name = "btnSend";
+            btnSend.Size = new Size(100, 25);
+            btnSend.TabIndex = 5;
+            btnSend.Text = "Trimite";
+            btnSend.Click += btnSend_Click;
+            // 
+            // lblUser
+            // 
+            lblUser.Location = new Point(10, 15);
+            lblUser.Name = "lblUser";
+            lblUser.Size = new Size(70, 20);
+            lblUser.TabIndex = 0;
+            lblUser.Text = "Username:";
+            // 
             // Form1
-            this.Text          = "Bătălie Navală - Lobby Chat";
-            this.ClientSize    = new System.Drawing.Size(484, 391);
-            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Controls.AddRange(new System.Windows.Forms.Control[] {
-                this.lblUser, this.txtUsername, this.btnConnect,
-                this.lstChat, this.txtMessage, this.btnSend
-            });
+            // 
+            ClientSize = new Size(484, 391);
+            Controls.Add(lblUser);
+            Controls.Add(txtUsername);
+            Controls.Add(btnConnect);
+            Controls.Add(lstChat);
+            Controls.Add(txtMessage);
+            Controls.Add(btnSend);
+            Name = "Form1";
+            StartPosition = FormStartPosition.CenterScreen;
+            Text = "Bătălie Navală - Lobby Chat";
+            ResumeLayout(false);
+            PerformLayout();
+        }
 
-            this.ResumeLayout(false);
-            this.PerformLayout();
+        private void txtUsername_TextChanged(object sender, EventArgs e)
+        {
+            // nefolosit
         }
 
         private System.Windows.Forms.TextBox txtUsername;

@@ -13,14 +13,14 @@ namespace ServerJoc
         private TcpListener server;
         private Thread serverThread;
 
-        // Mapă: TcpClient -> username (pentru a ști cine e cine)
-        private Dictionary<TcpClient, string> clientNames
-            = new Dictionary<TcpClient, string>();
+        private Dictionary<TcpClient, string> clientNames = new Dictionary<TcpClient, string>();
+        private List<GameRoom> rooms = new List<GameRoom>();
+        private GameRoom waitingRoom = null; // cameră cu un singur jucător
 
         public Form1()
         {
             InitializeComponent();
-            this.FormClosing += Form1_FormClosing;
+            this.FormClosing += (s, e) => { try { server?.Stop(); } catch { } };
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -29,133 +29,218 @@ namespace ServerJoc
             serverThread.Start();
         }
 
-        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            try { server?.Stop(); } catch { }
-        }
-
-        // ─── PORNIRE SERVER ───────────────────────────────────────────
         private void StartServer()
         {
             try
             {
                 server = new TcpListener(IPAddress.Any, 8888);
                 server.Start();
-                Log("✅ Serverul a pornit pe portul 8888...");
-
+                Log("✅ Serverul pornit pe portul 8888");
                 while (true)
                 {
-                    TcpClient client = server.AcceptTcpClient();
-                    lock (Program.clienti) { Program.clienti.Add(client); }
-                    Log("🔌 Client nou conectat (în așteptare LOGIN)");
-
-                    Thread t = new Thread(() => HandleClient(client))
-                    { IsBackground = true };
-                    t.Start();
+                    var client = server.AcceptTcpClient();
+                    Log("🔌 Client nou conectat");
+                    new Thread(() => HandleClient(client))
+                    { IsBackground = true }.Start();
                 }
             }
             catch (Exception ex)
             {
-                // Serverul s-a oprit (ex: la închiderea formei)
                 if (ex is ObjectDisposedException || ex is SocketException) return;
-                Log("❌ Eroare server: " + ex.Message);
+                Log("❌ " + ex.Message);
             }
         }
 
-        // ─── GESTIONARE CLIENT ────────────────────────────────────────
         private void HandleClient(TcpClient c)
         {
             NetworkStream stream = null;
-            string username = "Necunoscut";
+            string username = "?";
+            GameRoom myRoom = null;
 
             try
             {
                 stream = c.GetStream();
-                byte[] buffer = new byte[2048];
+                byte[] buffer = new byte[4096];
                 int bytes;
 
                 while ((bytes = stream.Read(buffer, 0, buffer.Length)) > 0)
                 {
                     string raw = Encoding.UTF8.GetString(buffer, 0, bytes).Trim();
-                    var (type, fields) = Protocol.Parse(raw);
-
-                    Log($"📨 Primit [{type}]: {raw}");
+                    string[] fields = Protocol.Parse(raw);
+                    string type = fields[0].Trim().ToUpper();
+                    Log($"📨 [{username}] {raw}");
 
                     switch (type)
                     {
                         case Protocol.LOGIN:
-                            // LOGIN|NumeUser
                             if (fields.Length >= 2)
                             {
                                 username = fields[1];
                                 lock (clientNames) { clientNames[c] = username; }
-                                Log($"👤 '{username}' s-a autentificat.");
-                                // Anunță toți că a intrat cineva nou
-                                Broadcast(Protocol.BuildServerMsg(
-                                    $"'{username}' a intrat în lobby!"), null);
+                                Log($"👤 '{username}' conectat");
+
+                                // Adaugă în cameră
+                                myRoom = AssignToRoom(c, username);
+                                Send(c, Protocol.BuildServerMsg(
+                                    myRoom.IsFull
+                                        ? $"Meci găsit! Adversar: {(myRoom.Player1 == c ? myRoom.Player2Name : myRoom.Player1Name)}"
+                                        : "Aștepți adversar..."));
+                            }
+                            break;
+
+                        case Protocol.ATTACK:
+                            // ATTACK|row,col
+                            if (myRoom != null && myRoom.GameStarted && fields.Length >= 2)
+                            {
+                                var coords = fields[1].Split(',');
+                                int row = int.Parse(coords[0]);
+                                int col = int.Parse(coords[1]);
+
+                                // Verifică dacă e rândul lui
+                                if (myRoom.CurrentPlayer != c)
+                                {
+                                    Send(c, Protocol.BuildServerMsg("Nu e rândul tău!"));
+                                    break;
+                                }
+
+                                // Atacă grila adversarului
+                                var targetGrid = myRoom.GridOfOther;
+                                string outcome = targetGrid.Attack(row, col);
+                                bool gameOver = targetGrid.AllSunk;
+
+                                if (!gameOver) myRoom.SwitchTurn();
+
+                                // Trimite rezultat ambilor jucători
+                                // Atacatorului: yourTurn=false dacă miss, true dacă hit
+                                bool attackerTurn = outcome != "MISS" && !gameOver;
+                                if (gameOver) attackerTurn = false;
+
+                                Send(myRoom.Player1,
+                                    Protocol.BuildResult(row, col, outcome,
+                                        myRoom.IsPlayer1Turn == (myRoom.Player1 == c)
+                                            ? attackerTurn
+                                            : !attackerTurn,
+                                        gameOver));
+
+                                Send(myRoom.Player2,
+                                    Protocol.BuildResult(row, col, outcome,
+                                        myRoom.IsPlayer1Turn == (myRoom.Player2 == c)
+                                            ? attackerTurn
+                                            : !attackerTurn,
+                                        gameOver));
+
+                                if (gameOver)
+                                {
+                                    string winner = clientNames[c];
+                                    Send(myRoom.Player1, Protocol.BuildGameOver(winner));
+                                    Send(myRoom.Player2, Protocol.BuildGameOver(winner));
+                                    Log($"🏆 '{winner}' a câștigat!");
+                                }
+
+                                Log($"💥 {username} atacă ({row},{col}) → {outcome}");
                             }
                             break;
 
                         case Protocol.CHAT:
-                            // CHAT|NumeUser|Mesaj
                             if (fields.Length >= 3)
                             {
-                                string sender = fields[1];
-                                string text = fields[2];
-                                Log($"💬 {sender}: {text}");
-                                // Re-broadcast mesajul chat la toți
-                                Broadcast(Protocol.BuildChat(sender, text), null);
+                                string msg = Protocol.BuildChat(fields[1], fields[2]);
+                                if (myRoom != null)
+                                {
+                                    // Chat doar în cameră
+                                    Send(myRoom.Player1, msg);
+                                    if (myRoom.Player2 != null)
+                                        Send(myRoom.Player2, msg);
+                                }
                             }
                             break;
 
                         case Protocol.DISCONNECT:
-                            // Client anunță că se deconectează
-                            Log($"👋 '{username}' s-a deconectat.");
-                            Broadcast(Protocol.BuildServerMsg(
-                                $"'{username}' a ieșit din lobby."), c);
                             goto CleanExit;
-
-                        default:
-                            Log($"⚠️ Mesaj necunoscut: {raw}");
-                            break;
                     }
                 }
             }
-            catch (Exception ex)
-            {
-                if (!(ex is ObjectDisposedException))
-                    Log($"⚠️ Eroare client '{username}': {ex.Message}");
-            }
+            catch { }
 
         CleanExit:
-            RemoveClient(c, username);
+            RemoveClient(c, username, myRoom);
             try { stream?.Close(); c.Close(); } catch { }
         }
 
-        // ─── BROADCAST ────────────────────────────────────────────────
-        private void Broadcast(string message, TcpClient exceptClient)
+        private GameRoom AssignToRoom(TcpClient c, string username)
         {
-            byte[] data = Encoding.UTF8.GetBytes(message);
-            TcpClient[] targets;
-            lock (Program.clienti) { targets = Program.clienti.ToArray(); }
-
-            foreach (var tc in targets)
+            lock (rooms)
             {
-                if (tc == exceptClient) continue;
-                try { tc.GetStream().Write(data, 0, data.Length); }
-                catch { RemoveClient(tc, "?"); }
+                if (waitingRoom == null)
+                {
+                    // Prima cameră nouă
+                    var room = new GameRoom
+                    {
+                        Player1 = c,
+                        Player1Name = username
+                    };
+                    waitingRoom = room;
+                    rooms.Add(room);
+                    Log($"🏠 Camera nouă pentru '{username}'");
+                    return room;
+                }
+                else
+                {
+                    // Al doilea jucător — pornim jocul
+                    var room = waitingRoom;
+                    room.Player2 = c;
+                    room.Player2Name = username;
+                    waitingRoom = null;
+
+                    // Plasăm navele aleatoriu
+                    room.Grid1.PlaceShipsRandomly();
+                    room.Grid2.PlaceShipsRandomly();
+                    room.GameStarted = true;
+
+                    Log($"🎮 Meci: '{room.Player1Name}' vs '{room.Player2Name}'");
+
+                    // Trimitem fiecărui jucător grila lui + start
+                    Send(room.Player1, Protocol.BuildYourGrid(room.Grid1.EncodeForOwner()));
+                    Send(room.Player2, Protocol.BuildYourGrid(room.Grid2.EncodeForOwner()));
+
+                    Send(room.Player1, Protocol.BuildGameStart(room.Player2Name, true));
+                    Send(room.Player2, Protocol.BuildGameStart(room.Player1Name, false));
+
+                    return room;
+                }
             }
         }
 
-        // ─── REMOVE CLIENT ────────────────────────────────────────────
-        private void RemoveClient(TcpClient c, string name)
+        private void RemoveClient(TcpClient c, string username, GameRoom room)
         {
-            lock (Program.clienti) { Program.clienti.Remove(c); }
             lock (clientNames) { clientNames.Remove(c); }
-            Log($"🗑️ Client '{name}' eliminat din listă.");
+            if (room != null)
+            {
+                lock (rooms)
+                {
+                    if (waitingRoom == room) waitingRoom = null;
+                    // Anunță adversarul
+                    var other = room.Player1 == c ? room.Player2 : room.Player1;
+                    if (other != null)
+                        Send(other, Protocol.BuildServerMsg(
+                            $"'{username}' s-a deconectat. Jocul s-a terminat."));
+                    rooms.Remove(room);
+                }
+            }
+            Log($"👋 '{username}' deconectat");
         }
 
-        // ─── HELPER LOG (thread-safe) ─────────────────────────────────
+        private void Send(TcpClient c, string message)
+        {
+            if (c == null) return;
+            try
+            {
+                byte[] data = Encoding.UTF8.GetBytes(message);
+                c.GetStream().Write(data, 0, data.Length);
+            }
+            catch { }
+        }
+
         private void Log(string msg)
         {
             if (listBox1.InvokeRequired)
@@ -164,12 +249,8 @@ namespace ServerJoc
                 listBox1.Items.Add(msg);
         }
 
-        private void btnConnect_Click(object sender, EventArgs e)
-            => MessageBox.Show("Serverul ascultă pe portul 8888");
-
-        private void btnSend_Click(object sender, EventArgs e)
-            => MessageBox.Show("Serverul transmite automat mesajele primite");
-
+        private void btnConnect_Click(object sender, EventArgs e) { }
+        private void btnSend_Click(object sender, EventArgs e) { }
         private void textBox2_TextChanged(object sender, EventArgs e) { }
     }
 }
