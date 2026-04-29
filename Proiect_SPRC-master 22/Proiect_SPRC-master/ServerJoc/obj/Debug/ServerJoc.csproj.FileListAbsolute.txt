@@ -1,0 +1,10 @@
+C:\Users\PC\Downloads\Proiect_SPRC-master 22\Proiect_SPRC-master\ServerJoc\bin\Debug\ServerJoc.exe.config
+C:\Users\PC\Downloads\Proiect_SPRC-master 22\Proiect_SPRC-master\ServerJoc\bin\Debug\ServerJoc.exe
+C:\Users\PC\Downloads\Proiect_SPRC-master 22\Proiect_SPRC-master\ServerJoc\bin\Debug\ServerJoc.pdb
+C:\Users\PC\Downloads\Proiect_SPRC-master 22\Proiect_SPRC-master\ServerJoc\obj\Debug\ServerJoc.csproj.AssemblyReference.cache
+C:\Users\PC\Downloads\Proiect_SPRC-master 22\Proiect_SPRC-master\ServerJoc\obj\Debug\ServerJoc.Form1.resources
+C:\Users\PC\Downloads\Proiect_SPRC-master 22\Proiect_SPRC-master\ServerJoc\obj\Debug\ServerJoc.Properties.Resources.resources
+C:\Users\PC\Downloads\Proiect_SPRC-master 22\Proiect_SPRC-master\ServerJoc\obj\Debug\ServerJoc.csproj.GenerateResource.cache
+C:\Users\PC\Downloads\Proiect_SPRC-master 22\Proiect_SPRC-master\ServerJoc\obj\Debug\ServerJoc.csproj.CoreCompileInputs.cache
+C:\Users\PC\Downloads\Proiect_SPRC-master 22\Proiect_SPRC-master\ServerJoc\obj\Debug\ServerJoc.exe
+C:\Users\PC\Downloads\Proiect_SPRC-master 22\Proiect_SPRC-master\ServerJoc\obj\Debug\ServerJoc.pdb

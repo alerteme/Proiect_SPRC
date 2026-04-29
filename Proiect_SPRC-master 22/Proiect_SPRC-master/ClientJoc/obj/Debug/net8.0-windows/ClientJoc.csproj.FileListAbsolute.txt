@@ -1,0 +1,17 @@
+C:\Users\PC\Downloads\Proiect_SPRC-master 22\Proiect_SPRC-master\ClientJoc\bin\Debug\net8.0-windows\ClientJoc.exe
+C:\Users\PC\Downloads\Proiect_SPRC-master 22\Proiect_SPRC-master\ClientJoc\bin\Debug\net8.0-windows\ClientJoc.deps.json
+C:\Users\PC\Downloads\Proiect_SPRC-master 22\Proiect_SPRC-master\ClientJoc\bin\Debug\net8.0-windows\ClientJoc.runtimeconfig.json
+C:\Users\PC\Downloads\Proiect_SPRC-master 22\Proiect_SPRC-master\ClientJoc\bin\Debug\net8.0-windows\ClientJoc.dll
+C:\Users\PC\Downloads\Proiect_SPRC-master 22\Proiect_SPRC-master\ClientJoc\bin\Debug\net8.0-windows\ClientJoc.pdb
+C:\Users\PC\Downloads\Proiect_SPRC-master 22\Proiect_SPRC-master\ClientJoc\obj\Debug\net8.0-windows\ClientJoc.Form1.resources
+C:\Users\PC\Downloads\Proiect_SPRC-master 22\Proiect_SPRC-master\ClientJoc\obj\Debug\net8.0-windows\ClientJoc.GameForm.resources
+C:\Users\PC\Downloads\Proiect_SPRC-master 22\Proiect_SPRC-master\ClientJoc\obj\Debug\net8.0-windows\ClientJoc.csproj.GenerateResource.cache
+C:\Users\PC\Downloads\Proiect_SPRC-master 22\Proiect_SPRC-master\ClientJoc\obj\Debug\net8.0-windows\ClientJoc.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\PC\Downloads\Proiect_SPRC-master 22\Proiect_SPRC-master\ClientJoc\obj\Debug\net8.0-windows\ClientJoc.AssemblyInfoInputs.cache
+C:\Users\PC\Downloads\Proiect_SPRC-master 22\Proiect_SPRC-master\ClientJoc\obj\Debug\net8.0-windows\ClientJoc.AssemblyInfo.cs
+C:\Users\PC\Downloads\Proiect_SPRC-master 22\Proiect_SPRC-master\ClientJoc\obj\Debug\net8.0-windows\ClientJoc.csproj.CoreCompileInputs.cache
+C:\Users\PC\Downloads\Proiect_SPRC-master 22\Proiect_SPRC-master\ClientJoc\obj\Debug\net8.0-windows\ClientJoc.dll
+C:\Users\PC\Downloads\Proiect_SPRC-master 22\Proiect_SPRC-master\ClientJoc\obj\Debug\net8.0-windows\refint\ClientJoc.dll
+C:\Users\PC\Downloads\Proiect_SPRC-master 22\Proiect_SPRC-master\ClientJoc\obj\Debug\net8.0-windows\ClientJoc.pdb
+C:\Users\PC\Downloads\Proiect_SPRC-master 22\Proiect_SPRC-master\ClientJoc\obj\Debug\net8.0-windows\ClientJoc.genruntimeconfig.cache
+C:\Users\PC\Downloads\Proiect_SPRC-master 22\Proiect_SPRC-master\ClientJoc\obj\Debug\net8.0-windows\ref\ClientJoc.dll
